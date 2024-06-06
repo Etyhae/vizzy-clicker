@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const clicker = document.querySelector("#clicker");
     const counter = document.querySelector("#counter")
+    const incomeCounter = document.querySelector("#income")
     const menuOpenBtn = document.querySelector("#menu-open-btn");
     const menuDialog = document.querySelector(".menu-dialog");
 
@@ -10,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const upgradeClickBtn = document.querySelector("#upgrade-click-btn");
     const upgradeIncomeBtn = document.querySelector("#upgrade-income-btn");
 
-    const COSTMULTIPLYER = 1.07;
+    const GROWTH_FACTOR = 1.07;
 
     const pointsMask = (val) => {
         return val
@@ -27,8 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Инициализация saves с новыми значениями
     let newSaves = {
         clickCost: 1,
+        clickLevel: 1,
         points: 0,
         income: 0,
+        incomeLevel: 1,
         incomeUpgCost: 250,
         clickUpgCost: 100,
     };
@@ -52,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     counter.innerHTML = pointsMask(Math.round(saves.points));
     incomeUpgCostDiv.innerHTML = saves.incomeUpgCost;
     clickUpgCostDiv.innerHTML = saves.clickUpgCost;
+    incomeCounter.innerHTML = saves.income + " fr/s";
 
     // Сохранение объединенных данных обратно в localStorage
     localStorage.setItem("saves", JSON.stringify(saves));
@@ -61,8 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (saves.points >= saves.clickUpgCost) {
             saves.points -= saves.clickUpgCost;
             saves.clickCost++;
+            saves.clickLevel++;
             counter.innerHTML = pointsMask(Math.round(saves.points));
-            saves.clickUpgCost = Math.round(100 + saves.clickUpgCost * COSTMULTIPLYER);
+            saves.clickUpgCost = Math.round(saves.clickUpgCost * Math.pow(GROWTH_FACTOR, saves.clickLevel));
             clickUpgCostDiv.innerHTML = saves.clickUpgCost;
             localStorage.setItem("saves", JSON.stringify(saves));
         }
@@ -70,9 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
     upgradeIncomeBtn.addEventListener("click", () => {
         if (saves.points >= saves.incomeUpgCost) {
             saves.points -= saves.incomeUpgCost;
-            saves.income = Math.round(5 + (saves.income * COSTMULTIPLYER));
+            saves.income = Math.round(5 + saves.income * GROWTH_FACTOR);
+            saves.incomeLevel++;
             counter.innerHTML = pointsMask(Math.round(saves.points));
-            saves.incomeUpgCost = Math.round(100 + saves.incomeUpgCost * COSTMULTIPLYER);
+            incomeCounter.innerHTML = saves.income + " fr/s";
+            saves.incomeUpgCost = Math.round(saves.incomeUpgCost * Math.pow(GROWTH_FACTOR, saves.incomeLevel));
             incomeUpgCostDiv.innerHTML = saves.incomeUpgCost;
             localStorage.setItem("saves", JSON.stringify(saves));
         }
@@ -99,8 +106,14 @@ document.addEventListener("DOMContentLoaded", () => {
     })
 
     setInterval(() => {
-        saves.points += saves.income;
-        counter.innerHTML = pointsMask(Math.round(saves.points));
-        localStorage.setItem("saves", JSON.stringify(saves));
+        if (saves.income > 0) {
+            clicker.classList.toggle("active");
+            saves.points += saves.income;
+            counter.innerHTML = pointsMask(Math.round(saves.points));
+            localStorage.setItem("saves", JSON.stringify(saves));
+            setTimeout(() => {
+                clicker.classList.toggle("active");
+            }, 200)
+        }
     }, 1000)
 })

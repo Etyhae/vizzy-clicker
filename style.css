@@ -14,7 +14,7 @@ body {
 .wrapper {
     display: flex;
     width: 100%;
-    min-height: calc(100dvh - 2ch - 4rem - 4rem - 4rem);
+    min-height: calc(100dvh - 2ch - 4rem - 4rem - 4rem - 4rem);
     align-items: center;
     justify-content: center;
 }
@@ -50,6 +50,20 @@ body {
     text-align: center;
     align-items: center;
     font-size: 3rem;
+    font-weight: 700;
+}
+
+#income {
+    width: 100%;
+    padding: 1rem 0;
+    box-sizing: border-box;
+    height: 2rem;
+    color: var(--main-color);
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    font-size: 1.5rem;
     font-weight: 700;
 }
 
@@ -90,6 +104,11 @@ body {
     }
 }
 
+#clicker.active {
+    box-shadow: var(--main-shadow);
+    transform: scale(1.1);
+}
+
 .menu-dialog[open] {
     display: flex;
 }
@@ -121,12 +140,9 @@ body {
     box-sizing: border-box;
     height: 100%;
     color: var(--main-color);
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     row-gap: 1rem;
-    justify-content: space-around;
-    text-align: center;
-    align-items: center;
     font-size: 1.5rem;
     font-weight: 700;
 }
