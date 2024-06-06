@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vizzy</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js"></script>
+</head>
+
+<body>
+    <div id="counter">
+
+    </div>
+
+    <div class="menu">
+        <button class="btn" id="menu-open-btn">
+            Menu
+        </button>
+    </div>
+    <div class="wrapper">
+        <div id="clicker"></div>
+    </div>
+
+    <dialog class="menu-dialog">
+        <h4>Upgrades</h4>
+        <div class="upgrade">
+            <div>
+                Click+
+            </div>
+            <div id="clickUpgCost">100</div>
+            <button type="button" class="btn" id="upgrade-click-btn">Up</button>
+        </div>
+        <div class="upgrade">
+            <div>
+                Income+
+            </div>
+            <div id="incomeUpgCost">250</div>
+            <button type="button" class="btn"
+                id="upgrade-income-btn">Up</button>
+        </div>
+        <form class="form-dialog-close" method="dialog">
+            <button class="btn" id="menu-close-btn">Close</button>
+        </form>
+    </dialog>
+</body>
+
+</html>
