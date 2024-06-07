@@ -75,11 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
     upgradeIncomeBtn.addEventListener("click", () => {
         if (saves.points >= saves.incomeUpgCost) {
             saves.points -= saves.incomeUpgCost;
-            saves.income = Math.round(5 + saves.income * GROWTH_FACTOR);
+            saves.income = Math.round(5 * saves.incomeLevel + saves.income * GROWTH_FACTOR);
             saves.incomeLevel++;
             counter.innerHTML = pointsMask(Math.round(saves.points));
             incomeCounter.innerHTML = saves.income + " fr/s";
-            saves.incomeUpgCost = Math.round(saves.incomeUpgCost * Math.pow(GROWTH_FACTOR, saves.incomeLevel));
+            saves.incomeUpgCost = Math.round(saves.incomeUpgCost * Math.pow(GROWTH_FACTOR, math.round(saves.incomeLevel / 2)));
             incomeUpgCostDiv.innerHTML = saves.incomeUpgCost;
             localStorage.setItem("saves", JSON.stringify(saves));
         }
