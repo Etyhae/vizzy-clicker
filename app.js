@@ -1,119 +1,143 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const clicker = document.querySelector("#clicker");
-    const counter = document.querySelector("#counter")
-    const incomeCounter = document.querySelector("#income")
-    const menuOpenBtn = document.querySelector("#menu-open-btn");
-    const menuDialog = document.querySelector(".menu-dialog");
-
-    const clickUpgCostDiv = document.querySelector("#clickUpgCost");
-    const incomeUpgCostDiv = document.querySelector("#incomeUpgCost");
-
-    const upgradeClickBtn = document.querySelector("#upgrade-click-btn");
-    const upgradeIncomeBtn = document.querySelector("#upgrade-income-btn");
-
     const GROWTH_FACTOR = 1.07;
 
-    const pointsMask = (val) => {
-        return val
-            .toString()
-            .split('')
-            .map((num, i, arr) => {
-                return (arr.length - 1 - i) % 3 === 0 && i !== arr.length - 1
-                    ? num + ' '
-                    : num
-            })
-            .join('') + " fr"
-    }
+    class Game {
+        constructor() {
+            this.newSaves = {
+                clickCost: 1,
+                clickLevel: 1,
+                points: 0,
+                income: 0,
+                incomeLevel: 1,
+                incomeUpgCost: 250,
+                clickUpgCost: 100,
+            };
 
-    // Инициализация saves с новыми значениями
-    let newSaves = {
-        clickCost: 1,
-        clickLevel: 1,
-        points: 0,
-        income: 0,
-        incomeLevel: 1,
-        incomeUpgCost: 250,
-        clickUpgCost: 100,
-    };
-
-    // Загрузка сохраненных данных из localStorage
-    let storedSaves = localStorage.getItem("saves");
-    if (storedSaves) {
-        try {
-            storedSaves = JSON.parse(storedSaves);
-        } catch (e) {
-            console.error("Ошибка при парсинге JSON:", e);
-            storedSaves = {};
+            this.saves = this.loadSaves();
+            this.initializeElements();
+            this.updateUI();
+            this.addEventListeners();
+            this.startIncomeInterval();
         }
-    } else {
-        storedSaves = {};
-    }
 
-    // Объединение новых и сохраненных данных
-    let saves = Object.assign({}, newSaves, storedSaves);
+        initializeElements() {
+            this.clicker = document.querySelector("#clicker");
 
-    counter.innerHTML = pointsMask(Math.round(saves.points));
-    incomeUpgCostDiv.innerHTML = saves.incomeUpgCost;
-    clickUpgCostDiv.innerHTML = saves.clickUpgCost;
-    incomeCounter.innerHTML = saves.income + " fr/s";
+            this.counter = document.querySelector("#counter");
+            this.incomeCounter = document.querySelector("#income");
 
-    // Сохранение объединенных данных обратно в localStorage
-    localStorage.setItem("saves", JSON.stringify(saves));
+            this.menuOpenBtn = document.querySelector("#menu-open-btn");
+            this.menuDialog = document.querySelector(".menu-dialog");
 
+            this.clickUpgCostDiv = document.querySelector("#clickUpgCost");
+            this.incomeUpgCostDiv = document.querySelector("#incomeUpgCost");
 
-    upgradeClickBtn.addEventListener("click", () => {
-        if (saves.points >= saves.clickUpgCost) {
-            saves.points -= saves.clickUpgCost;
-            saves.clickCost++;
-            saves.clickLevel++;
-            counter.innerHTML = pointsMask(Math.round(saves.points));
-            saves.clickUpgCost = Math.round(saves.clickUpgCost * Math.pow(GROWTH_FACTOR, saves.clickLevel));
-            clickUpgCostDiv.innerHTML = saves.clickUpgCost;
-            localStorage.setItem("saves", JSON.stringify(saves));
+            this.upgradeClickBtn = document.querySelector("#upgrade-click-btn");
+            this.upgradeIncomeBtn = document.querySelector("#upgrade-income-btn");
         }
-    })
-    upgradeIncomeBtn.addEventListener("click", () => {
-        if (saves.points >= saves.incomeUpgCost) {
-            saves.points -= saves.incomeUpgCost;
-            saves.income = Math.round(5 * saves.incomeLevel + saves.income * GROWTH_FACTOR);
-            saves.incomeLevel++;
-            counter.innerHTML = pointsMask(Math.round(saves.points));
-            incomeCounter.innerHTML = saves.income + " fr/s";
-            saves.incomeUpgCost = Math.round(saves.incomeUpgCost * Math.pow(GROWTH_FACTOR, math.round(saves.incomeLevel / 2)));
-            incomeUpgCostDiv.innerHTML = saves.incomeUpgCost;
-            localStorage.setItem("saves", JSON.stringify(saves));
+
+        loadSaves() {
+            let storedSaves = localStorage.getItem("saves");
+            if (storedSaves) {
+                try {
+                    storedSaves = JSON.parse(storedSaves);
+                } catch (e) {
+                    console.error("Ошибка при парсинге JSON:", e);
+                    storedSaves = {};
+                }
+            } else {
+                storedSaves = {};
+            }
+            return Object.assign({}, this.newSaves, storedSaves);
         }
-    })
 
-    menuOpenBtn.addEventListener("click", (e) => {
-        menuDialog.showModal();
-    })
+        saveSaves() {
+            localStorage.setItem("saves", JSON.stringify(this.saves));
+        }
 
-    document.addEventListener("keyup", (e) => {
-        if (e.code === "Space") {
+        pointsMask(val) {
+            return val
+                .toString()
+                .split('')
+                .map((num, i, arr) => {
+                    return (arr.length - 1 - i) % 3 === 0 && i !== arr.length - 1
+                        ? num + ' '
+                        : num;
+                })
+                .join('') + " fr";
+        }
+
+        updateUI() {
+            this.counter.innerHTML = this.pointsMask(Math.round(this.saves.points));
+            this.incomeUpgCostDiv.innerHTML = this.saves.incomeUpgCost;
+            this.clickUpgCostDiv.innerHTML = this.saves.clickUpgCost;
+            this.incomeCounter.innerHTML = this.saves.income + " fr/s";
+        }
+
+        addEventListeners() {
+            this.upgradeClickBtn.addEventListener("click", () => this.upgradeClick());
+            this.upgradeIncomeBtn.addEventListener("click", () => this.upgradeIncome());
+            this.menuOpenBtn.addEventListener("click", () => this.menuDialog.showModal());
+            document.addEventListener("keyup", (e) => this.handleKeyUp(e));
+            this.clicker.addEventListener("click", (e) => this.handleClick(e));
+        }
+
+        handleKeyUp(e) {
+            if (e.code === "Space") {
+                e.preventDefault();
+                this.clicker.classList.toggle("active");
+                this.saves.points += this.saves.clickCost;
+                setTimeout(() => {
+                    this.clicker.classList.toggle("active");
+                }, 100);
+                this.updateUI();
+                this.saveSaves();
+            }
+        }
+
+        handleClick(e) {
             e.preventDefault();
-            saves.points += saves.clickCost;
-            counter.innerHTML = pointsMask(Math.round(saves.points));
-            localStorage.setItem("saves", JSON.stringify(saves));
+            this.saves.points += this.saves.clickCost;
+            this.updateUI();
+            this.saveSaves();
         }
-    });
 
-    clicker.addEventListener("click", (e) => {
-        e.preventDefault();
-        saves.points += saves.clickCost;
-        counter.innerHTML = pointsMask(Math.round(saves.points));
-        localStorage.setItem("saves", JSON.stringify(saves));
-    })
-
-    setInterval(() => {
-        if (saves.income > 0) {
-            clicker.classList.toggle("active");
-            saves.points += saves.income;
-            counter.innerHTML = pointsMask(Math.round(saves.points));
-            localStorage.setItem("saves", JSON.stringify(saves));
-            setTimeout(() => {
-                clicker.classList.toggle("active");
-            }, 200)
+        upgradeClick() {
+            if (this.saves.points >= this.saves.clickUpgCost) {
+                this.saves.points -= this.saves.clickUpgCost;
+                this.saves.clickCost++;
+                this.saves.clickLevel++;
+                this.saves.clickUpgCost = Math.round(this.saves.clickUpgCost * GROWTH_FACTOR * this.saves.clickLevel);
+                this.updateUI();
+                this.saveSaves();
+            }
         }
-    }, 1000)
-})
+
+        upgradeIncome() {
+            if (this.saves.points >= this.saves.incomeUpgCost) {
+                this.saves.points -= this.saves.incomeUpgCost;
+                this.saves.income = Math.round(5 * this.saves.incomeLevel + this.saves.income * GROWTH_FACTOR);
+                this.saves.incomeLevel++;
+                this.saves.incomeUpgCost = Math.round(this.saves.incomeUpgCost * Math.pow(GROWTH_FACTOR, Math.round(this.saves.incomeLevel / 2)));
+                this.updateUI();
+                this.saveSaves();
+            }
+        }
+
+        startIncomeInterval() {
+            setInterval(() => {
+                if (this.saves.income > 0) {
+                    this.clicker.classList.toggle("active");
+                    this.saves.points += this.saves.income;
+                    this.updateUI();
+                    this.saveSaves();
+                    setTimeout(() => {
+                        this.clicker.classList.toggle("active");
+                    }, 200);
+                }
+            }, 1000);
+        }
+    }
+
+    new Game();
+});
